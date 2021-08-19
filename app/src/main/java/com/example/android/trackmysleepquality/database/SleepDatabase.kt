@@ -28,7 +28,7 @@ import androidx.room.RoomDatabase
 ) //entities is the list of all tables to work with
 //version number is mandatory to be updated every time you change database cause if u don't the app will crash and couldn't to work anymore
 //export schema as i understood is needed to save shema (if true) of the DB to a folder , provides with the version history of DB (may be as i seen before is just sql script?)
-annotation class SleepDatabase : RoomDatabase() {
+abstract class SleepDatabase : RoomDatabase() {
     abstract val sleepDatabaseDao: SleepDatabaseDao
 
     companion object {
