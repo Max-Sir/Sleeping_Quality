@@ -51,7 +51,7 @@ class SleepTrackerFragment : Fragment() {
 
         val application = requireNotNull(this.activity).application
 
-        val dataSource = SleepDatabase.getInstance(application).sleepDatabaseDao]
+        val dataSource = SleepDatabase.getInstance(application).sleepDatabaseDao
 
         val viewModelFactory= SleepTrackerViewModelFactory(dataSource,application)
 

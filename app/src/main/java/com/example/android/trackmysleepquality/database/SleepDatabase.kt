@@ -49,7 +49,7 @@ abstract class SleepDatabase : RoomDatabase() {
                         .build()
                     INSTANCE=instance
                 }
-                return instance!!
+                return instance
             }
         }
     }
