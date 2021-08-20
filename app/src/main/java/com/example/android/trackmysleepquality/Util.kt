@@ -21,6 +21,7 @@ import android.content.res.Resources
 import android.os.Build
 import android.text.Html
 import android.text.Spanned
+import android.text.format.DateUtils
 import androidx.core.text.HtmlCompat
 import com.example.android.trackmysleepquality.database.SleepNight
 import java.text.SimpleDateFormat
@@ -87,13 +88,15 @@ fun formatNights(nights: List<SleepNight>, resources: Resources): Spanned {
                 append("\t${convertLongToDateString(it.endTime)}<br>")
                 append(resources.getString(R.string.quality))
                 append("\t${convertNumericQualityToString(it.sleepQuality, resources)}<br>")
-                append(resources.getString(R.string.hours_slept))
-                // Hours
-                append("\t ${it.endTime.minus(it.startTime) / 1000 / 60 / 60}:")
-                // Minutes
-                append("${it.endTime.minus(it.startTime) / 1000 / 60}:")
-                // Seconds
-                append("${it.endTime.minus(it.startTime) / 1000}<br><br>")
+                //append(resources.getString(R.string.hours_slept))
+
+                append(DateUtils.formatElapsedTime(it.endTime.minus(it.startTime).div(1000L)))
+            // Hours
+//                append("\t ${it.endTime.minus(it.startTime) / 1000 / 60 / 60}:")
+//                // Minutes
+//                append("${it.endTime.minus(it.startTime) / 1000 / 60}:")
+//                // Seconds
+//                append("${it.endTime.minus(it.startTime) / 1000}<br><br>")
             }
         }
     }

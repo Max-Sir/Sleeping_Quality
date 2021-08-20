@@ -17,10 +17,7 @@
 package com.example.android.trackmysleepquality.sleeptracker
 
 import android.app.Application
-import androidx.lifecycle.viewModelScope
-import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.Transformations
+import androidx.lifecycle.*
 import com.example.android.trackmysleepquality.database.SleepDatabaseDao
 import com.example.android.trackmysleepquality.database.SleepNight
 import com.example.android.trackmysleepquality.formatNights
@@ -40,6 +37,21 @@ class SleepTrackerViewModel(
         super.onCleared()
         viewModelJob.cancel()
     }
+//
+//    private val _eventStarted = MutableLiveData<Boolean>(false)
+//    val eventStarted: LiveData<Boolean>
+//        get() = _eventStarted
+
+
+    private val _showSnackbarEvent=MutableLiveData<Boolean>()
+
+    val showSnackbarEvent:LiveData<Boolean>
+    get() = _showSnackbarEvent
+
+    private val _navigateToSleepQuality=MutableLiveData<SleepNight>()
+
+    val navigateToSleepQuality:LiveData<SleepNight>
+    get() = _navigateToSleepQuality
 
     private val uiScope = CoroutineScope(Dispatchers.Main + viewModelJob)
 
@@ -47,13 +59,17 @@ class SleepTrackerViewModel(
 
     private val nights = database.getAllNights()
 
-    val nightsSting=Transformations.map(nights){ nights->
-        formatNights(nights,application.resources)
+    val nightsSting = Transformations.map(nights) { nights ->
+        formatNights(nights, application.resources)
 
     }
 
     init {
         initializeTonight()
+    }
+
+    fun doneNavigating(){
+        _navigateToSleepQuality.value=null
     }
 
     private fun initializeTonight() {
@@ -62,53 +78,74 @@ class SleepTrackerViewModel(
         }
     }
 
+    val startButtonVisible=Transformations.map(tonight){
+        it==null
+    }
+
+    val stopButtonVisible=Transformations.map(tonight){
+        it!=null
+    }
+
+    val clearButtonVisible=Transformations.map(nights){
+        it?.isNotEmpty()
+    }
+
     private suspend fun getTonight(): SleepNight? {
-        return withContext(Dispatchers.IO){
-            var night=database.getTonight()
-            if(night?.endTime != night?.startTime){
-                night=null
+        return withContext(Dispatchers.IO) {
+            var night = database.getTonight()
+            if (night?.endTime != night?.startTime) {
+                night = null
             }
             night
         }
     }
 
-    fun onStartTracking(){
+    fun onStartTracking() {
         uiScope.launch {
-            val newNight=SleepNight()
-            insert(newNight)
-            tonight.value=getTonight()
+
+                val newNight = SleepNight()
+                insert(newNight)
+                tonight.value = getTonight()
+
         }
     }
 
-    private suspend fun insert(newNight:SleepNight){
-        withContext(Dispatchers.IO){
+    private suspend fun insert(newNight: SleepNight) {
+        withContext(Dispatchers.IO) {
             database.insert(newNight)
         }
     }
 
-    fun onStopTracking(){
+    fun onStopTracking() {
         uiScope.launch {
-            val oldNight=tonight.value ?: return@launch
-            oldNight.endTime=System.currentTimeMillis()
-            update(oldNight)
+
+                val oldNight = tonight.value ?: return@launch
+                oldNight.endTime = System.currentTimeMillis()
+                update(oldNight)
+                _navigateToSleepQuality.value=oldNight
         }
     }
 
-    private suspend fun update(newNight: SleepNight){
-        withContext(Dispatchers.IO){
+    private suspend fun update(newNight: SleepNight) {
+        withContext(Dispatchers.IO) {
             database.update(newNight)
         }
     }
 
-    fun onClear(){
+    fun doneSnackbarShowing(){
+        _showSnackbarEvent.value=false
+    }
+
+    fun onClear() {
         uiScope.launch {
             clear()
-            tonight.value=null
+            _showSnackbarEvent.value=true
+            tonight.value = null
         }
     }
 
-    private suspend fun clear(){
-        withContext(Dispatchers.IO){
+    private suspend fun clear() {
+        withContext(Dispatchers.IO) {
             database.clear()
         }
     }
